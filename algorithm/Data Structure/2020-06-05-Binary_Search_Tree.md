@@ -82,7 +82,7 @@
 (Depth 3)                            [9]
 ```
 
-다음과 같이 특정 순열에 대한 이진 탐색 트리가 생성되었다. 위 이진 탐색 트리에 중위 순회로 접근을 한다면 접근 순서는 순열이 오름차순으로 정렬된 결과와 같게 된다.
+다음과 같이 특정 순열에 대한 이진 탐색 트리가 생성되었다. **위 이진 탐색 트리에 중위 순회로 접근을 한다면 접근 순서는 순열이 오름차순으로 정렬된 결과와 같게 된다.**
 
 위 과정에 대한 삽입 알고리즘 (슈도 코드)을 재귀적으로 구현할 시의 예제는 다음과 같다.
 
@@ -203,10 +203,291 @@ function search(data)
 
 ## 3. 이진트리에서 데이터 삭제
 
-특정 데이터만 삭제하면 데이터 구조가 깨질수도 있음. 노드의 자식이 없으면 그냥 지워도 되는데 자식이 있을 때 복잡해짐
+이진 트리에서 데이터를 삭제하는 경우는 보통 3가지 케이스를 나누어 생각한다.
 
-자식이 없으면 그냥 지우면 됨
+### 1. 삭제하려는 노드가 자식 노드가 없을 때
 
-자식이 하나만 있으면 삭제할 노드가 가리키는거랑 이어주면됨
+삭제하려는 노드가 자식 노드가 없을 때 해당 노드만 제거하면 된다.
 
-자식이 두개일떄 좀 복잡한데... 
+리프 노드를 삭제한다 해도 트리 구조가 깨지지 않는다.
+
+```
+(Depth 0)               [5]
+                       /    \
+(Depth 1)           [2]      [7]
+                   /   \         \
+(Depth 2)        [1]   [4]        [8]
+                                     \
+(Depth 3)                            [9]
+```
+
+위 트리에서 리프 노드를 삭제한다 해도 트리 구조에 영향을 끼치지 않는 것을 알 수 있다.
+
+리프 노드의 삭제 알고리즘은 다음과 같다.
+
+```
+[삭제 대상 노드의 부모 노드]가 존재하지 않을 시에는 루트 노드이므로
+    루트 노드 = null
+아니면 [삭제 대상 노드의 부모 노드]의 왼쪽 노드가 삭제 대상 노드일 시
+    [삭제 대상 노드의 부모 노드]의 왼쪽 노드 = null
+아니면 [삭제 대상 노드의 부모 노드]의 오른쪽 노드가 삭제 대상 노드일 시
+    [삭제 대상 노드의 부모 노드]의 오른쪽 노드 = null
+```
+
+단순히 삭제 대상 노드에 접근하여 해당 노드를 제거하면 된다.
+
+### 2. 삭제하려는 노드가 자식 노드를 하나만 가지고 있을 때
+
+이 상황에서도 동일하게 해당 노드만 제거하면 된다. 왜냐면 해당 노드를 제거한다 해도 트리 구조에 영향을 끼치지 않기 때문이다.
+
+```
+(Depth 0)               [5]
+                       /    \
+(Depth 1)           [2]      [7]
+                   /   \         \
+(Depth 2)        [1]   [4]        [8]
+                                     \
+(Depth 3)                            [9]
+```
+
+위 트리에서 `7` , `8` 을 삭제한다 해도 단순히 해당 노드만 삭제하고 이어 붙이는 것이므로 트리 구조에 영향을 끼치지 않는 것을 알 수 있다.
+
+자식 노드를 하나만 가지고 있는 노드의 삭제 알고리즘은 다음과 같다.
+
+```
+[삭제 대상 노드의 부모 노드]가 존재하지 않을 시에는 루트 노드이므로
+    루트 노드 = 삭제 대상 노드의 자식 노드
+아니면 [삭제 대상 노드의 부모 노드]의 왼쪽 노드가 삭제 대상 노드일 시
+    [삭제 대상 노드의 부모 노드]의 왼쪽 노드 = [삭제 대상 노드의 자식(왼쪽/오른쪽) 노드]
+아니면 [삭제 대상 노드의 부모 노드]의 오른쪽 노드가 삭제 대상 노드일 시
+    [삭제 대상 노드의 부모 노드]의 오른쪽 노드 = [삭제 대상 노드의 자식(왼쪽/오른쪽) 노드]
+```
+
+삭제 할 노드의 자식 노드가 하나만 있으면 삭제할 노드의 부모 노드와 삭제할 노드의 자식 노드를 이어주면 된다.
+
+### 3. 삭제하려는 노드가 자식 노드를 두개 가지고 있을 때
+
+이 상황에서는 삭제 대상 노드를 삭제하고 나서 그래프의 구조가 변하게 된다.
+
+예를 들어 아래 트리에서 원소 `2`를 제거하는 것을 생각해보자.
+
+```
+(Depth 0)               [5]
+                       /    \
+(Depth 1)           [2]      [7]
+                   /   \         \
+(Depth 2)        [1]   [4]        [8]
+                                     \
+(Depth 3)                            [9]
+```
+
+2를 제거할 때 해당 위치에 대체할 노드가 들어가야 한다. 왼쪽 자식 노드와 오른쪽 자식 노드 중 어느 노드를 넣을 지 고려해야 하는데 단순히 삭제 노드의 자식 노드를 집어 넣으면 안된다.
+
+해당 경우에서는 2를 제거하면 2 다음으로 작거나 2 다음으로 큰 노드를 해당 자리에 집어 넣어야 한다.
+
+왜냐하면 2에서 갈라지는 노드의 왼편은 모두 2보다 작고 오른편은 모두 2보다 크다. (상기 예에는 1, 4밖에 없지만 이진탐색트리 규칙을 생각해보면 이는 자명하다.) 따라서 이진탐색트리 규칙을 유지하기 위해서 2 다음으로 작거나 큰 수를 둘 중 하나(1 혹은 4)를 노드 2에 덮어 씌우고 기존 노드는 삭제한다. 
+
+알고리즘을 정리하면 다음과 같다. (해당 알고리즘에서는 삭제할 노드 다음으로 큰 수를 대체하는 것으로 함.)
+
+```
+삭제할 노드를 탐색한다.
+삭제할 노드의 오른쪽 서브트리에서 전위순회 방법으로 삭제할 노드 다음으로 큰 노드를 검색한다.
+삭제할 노드에 삭제할 노드 다음으로 큰 수를 덮어 씌운다.
+삭제할 노드 다음으로 큰 노드를 삭제한다. (삭제시 해당 노드는 리프 노드이거나 자식이 하나만 있는 노드이므로 위 1, 2 방법을 이용하여 삭제한다.)
+```
+
+## 4. Java 구현
+
+하기 자바 구현 코드는 위에서 언급한 삽입, 탐색, 삭제를 구현하였으며 삽입과 탐색은 두 가지 방법으로 구현하였다.
+
+```java
+public class BinarySearchTree {
+    public ObjectNode rootNode = null;
+
+    public void insert(int data) {
+        // approach에 직접 생성자 이용하여 대입하면 실제로 노드에 반영이 안되기 때문0에 다음과 같이 구현함.
+        ObjectNode approach = rootNode; // 초기에 루트 노드에 접근함
+        while (true) {
+            if (approach != null) {
+                if(approach.data > data) {
+                    if(approach.leftNode == null) {
+                        approach.leftNode = new ObjectNode(data);
+                        break;
+                    } else {
+                        approach = approach.leftNode;
+                    }
+                } else {
+                    if(approach.rightNode == null) {
+                        approach.rightNode = new ObjectNode(data);
+                        break;
+                    } else {
+                        approach = approach.rightNode;
+                    }
+                }
+            } else { // 초기 상태일때만 실행됨
+                rootNode = new ObjectNode(data);
+                break;
+            }
+        }
+    }
+
+    public void insertRecursive(int data) {
+        if(rootNode == null) {
+            rootNode = new ObjectNode(data);
+        } else {
+            insert(rootNode, data);
+        }
+    }
+
+    private void insert(ObjectNode node, int data) {
+        if(node.data > data) {
+            if(node.leftNode == null) {
+                node.leftNode = new ObjectNode(data);
+            } else {
+                insert(node.leftNode, data);
+            }
+        } else {
+            if(node.rightNode == null) {
+                node.rightNode = new ObjectNode(data);
+            } else {
+                insert(node.rightNode, data);
+            }
+        }
+    }
+
+    public boolean search(int data) {
+        ObjectNode approach = rootNode; // 초기에 루트 노드에 접근함
+        boolean returnValue = false;
+        while (true) {
+            if (approach == null) {
+                break;
+            } else if(approach.data == data) {
+                returnValue = true;
+                break;
+            } else if(approach.data > data) {
+                approach = approach.leftNode;
+            } else {
+                approach = approach.rightNode;
+            }
+        }
+        return returnValue;
+    }
+
+    public boolean searchRecursive(int data) {
+        return search(rootNode, data);
+    }
+
+    private boolean search(ObjectNode node, int data) {
+        boolean returnValue;
+        if(node == null) {
+            returnValue = false;
+        } else if(node.data == data) {
+            returnValue = true;
+        } else if(node.data > data) {
+            returnValue = search(node.leftNode, data);
+        } else {
+            returnValue = search(node.rightNode, data);
+        }
+        return returnValue;
+    }
+
+    private boolean deleteLeafNode(ObjectNode parentNode, ObjectNode subNode) {
+        boolean returnValue = false;
+        if(parentNode == null) {
+            parentNode = rootNode;
+        }
+        // parentNode 에 접근해서 subNode 를 삭제함.
+        if(parentNode.leftNode == subNode) {
+            parentNode.leftNode = null;
+            returnValue = true;
+        } else if(parentNode.rightNode == subNode) {
+            parentNode.rightNode = null;
+            returnValue = true;
+        } else if(parentNode == rootNode) {
+            rootNode = null;
+            returnValue = true;
+        }
+        return returnValue;
+    }
+
+    private boolean deleteEitherNode(ObjectNode parentNode, ObjectNode subNode) {
+        boolean returnValue = false;
+        if(parentNode == null) {
+            parentNode = rootNode;
+        }
+        if(parentNode.leftNode == subNode) {
+            if(subNode.leftNode != null) {
+                parentNode.leftNode = subNode.leftNode;
+            } else {
+                parentNode.leftNode = subNode.rightNode;
+            }
+            returnValue = true;
+        } else if(parentNode.rightNode == subNode) {
+            if(subNode.leftNode != null) {
+                parentNode.rightNode = subNode.leftNode;
+            } else {
+                parentNode.rightNode = subNode.rightNode;
+            }
+            returnValue = true;
+        } else if(parentNode == rootNode) {
+            if(subNode.leftNode != null) {
+                rootNode = subNode.leftNode;
+            } else {
+                rootNode = subNode.rightNode;
+            }
+            returnValue = true;
+        }
+        return returnValue;
+    }
+
+    public boolean delete(int data) {
+        // 검색 로직 그대로 카피
+        ObjectNode approach = rootNode; // 초기에 루트 노드에 접근함
+        ObjectNode parent = null;
+        boolean returnValue = false;
+        while (true) {
+            if (approach == null) {
+                break;
+            } else if(approach.data == data) {
+                returnValue = true;
+                break;
+            } else if(approach.data > data) {
+                parent = approach;
+                approach = approach.leftNode;
+            } else {
+                parent = approach;
+                approach = approach.rightNode;
+            }
+        }
+        if(returnValue) {
+            if(approach.leftNode == null && approach.rightNode == null) { // leaf node
+                returnValue = deleteLeafNode(parent, approach);
+            } else if(approach.leftNode == null ^ approach.rightNode == null) { // 둘중 하나만 자식이 있을때
+                returnValue = deleteEitherNode(parent, approach);
+            } else { // 둘다 자식이 있을때
+                ObjectNode replaceNode = approach.rightNode; // 해당노드보다 큰 노드를 찾아야 하므로 right node에 접근
+                ObjectNode parentNodeOfReplace = approach;
+                while(replaceNode.leftNode != null) {
+                    parentNodeOfReplace = replaceNode;
+                    replaceNode = replaceNode.leftNode;
+                }
+                // 1. 값 복사
+                approach.data = replaceNode.data;
+                // 2. 대체 노드 제거
+                if(replaceNode.rightNode == null) { // leaf node
+                    returnValue = deleteLeafNode(parentNodeOfReplace, replaceNode);
+                } else { // rightNode가 null이 아닐때
+                    returnValue = deleteEitherNode(parentNodeOfReplace, replaceNode);
+                }
+            }
+        }
+        return returnValue;
+    }
+    public void print() {
+        ObjectNode.inorder(rootNode);
+        System.out.println();
+    }
+}
+
+```
+
