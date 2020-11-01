@@ -25,7 +25,7 @@ Maven이 사용하는 자바 버전 등을 확인할 수 있다.
 
 ## 3. Maven 프로젝트 생성 및 pom.xml에 대한 간략한 설명
 
-cli 상에서 Maven 프로젝트를 생성하는 예제 명령어이다.
+CLI 상에서 Maven 프로젝트를 생성하는 예제 명령어이다.
 
 ```shell
 $ mvn archetype:generate \
